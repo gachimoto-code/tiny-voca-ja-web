@@ -3,12 +3,12 @@ dist/
 .env
 .env*
 !.env.example
-.DS_Store
 
 # Model binaries and generated assets (weights live on Hugging Face;
 # see packages/model-assets/README.md)
 apps/wasm-app/frontend/public/model/
 apps/wasm-app/frontend/public/kuromoji-dict/
 apps/wasm-app/frontend/public/engine/
+apps/wasm-app/frontend/src/engine-dist/tv_engine.js
 apps/server-app/sample-output.wav
 *.tsbuildinfo
