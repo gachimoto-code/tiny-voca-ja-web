@@ -9,6 +9,7 @@ mkdir -p ../frontend/public/engine
 emcc -O3 \
   tv_wasm.c vendor/tv.c vendor/tv_dsp.c vendor/tv_kernels_ref.c \
   -Ivendor \
+  -msimd128 \
   -sMODULARIZE=1 -sEXPORT_ES6=1 -sENVIRONMENT=web \
   -sALLOW_MEMORY_GROWTH=1 \
   -sEXPORTED_FUNCTIONS='["_tvw_init","_tvw_synth","_tvw_free","_malloc","_free"]' \
