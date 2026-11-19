@@ -27,6 +27,36 @@ tiny-voca-ja-web/
 └─ README.md
 ```
 
+## 動かし方
+
+前提は Node.js だけです（動作確認は Node 24）。clone したら、リポジトリのルートで一度だけ実行します。
+
+```sh
+npm install
+npm run build:phonemizer   # 共通の読み処理パッケージのビルド（A/B どちらにも必要）
+```
+
+### A: サーバ版（ONNX + Node）
+
+ターミナルを2つ使います。
+
+```sh
+npm run dev:server   # バックエンド（Express、ポート 3001）
+npm run dev:web      # フロントエンド（Vite）
+```
+
+ブラウザで http://localhost:5173 を開きます。`/api` へのリクエストはフロントの開発サーバがバックエンド（3001）へ中継します。
+
+### B: ブラウザ版（WASM）
+
+```sh
+npm run dev -w wasm-app-frontend
+```
+
+ブラウザで http://localhost:5173 を開きます（Aのフロントと同時起動の場合は 5174 になります）。バックエンドはなく、推論はすべてブラウザ内で動きます。WASM エンジン（`apps/wasm-app/frontend/public/engine/`）はリポジトリに含まれていて、モデルと形態素辞書は起動時に `prepare-assets` が自動配置します。初回だけ、モデル（約4.9MB）と辞書の読み込みに少し時間がかかります。
+
+本番用には各フロントを `npm run build -w server-app-frontend` / `npm run build -w wasm-app-frontend` でビルドします（Aのバックエンドは `npm run start -w server-app-backend`）。
+
 ## 設計方針
 
 - 読み処理（phonemizer）とモデル資産は packages に1つだけ置き、A/B 両アプリが共有する。
