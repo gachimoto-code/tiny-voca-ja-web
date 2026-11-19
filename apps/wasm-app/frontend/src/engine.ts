@@ -42,7 +42,11 @@ async function loadModule(): Promise<TvModule> {
       const ptr = mod._malloc(bin.length);
       mod.HEAPU8.set(bin, ptr);
       const rc = mod._tvw_init(ptr, bin.length);
-      mod._free(ptr);
+      // Do NOT free ptr: the C engine's model is zero-copy — every weight
+      // points into this tvoca.bin buffer (tv_file_open keeps f->base), so
+      // it must stay allocated for the module's whole lifetime. Freeing it
+      // lets later allocations overwrite the weights, which corrupted
+      // longer and repeated syntheses (truncated / NaN audio).
       if (rc !== 0) throw new Error("tvoca.bin の読み込みに失敗しました");
       await initPhonemizer("/kuromoji-dict/");
       return mod;
