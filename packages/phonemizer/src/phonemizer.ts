@@ -12,6 +12,9 @@
 import kuromoji from "kuromoji";
 import vocabJson from "./vocab.json" with { type: "json" };
 import { COUNTERS, numberChunksKana, numberTokenKana } from "./numbers.js";
+import { latinSurfaceToKana } from "./english.js";
+
+export { englishToKana, graphemeToKana } from "./english.js";
 
 export const SYMBOL_TO_ID = vocabJson as Record<string, number>;
 const BOS = "<bos>";
@@ -221,6 +224,10 @@ export async function clauseToSegments(clause: string): Promise<string[][]> {
     }
     // Particle readings that differ from the dictionary headword reading.
     let reading = tok.reading ?? "";
+    // English words (Latin surfaces) carry no usable kuromoji reading:
+    // convert them to katakana loanword readings (Route A, english.ts).
+    const latin = latinSurfaceToKana(surface);
+    if (latin !== null) reading = latin;
     if (surface === "こんにちは") reading = "コンニチワ";
     else if (surface === "こんばんは") reading = "コンバンワ";
     if (surface === "は" && tok.pos === "助詞") reading = "ワ";
