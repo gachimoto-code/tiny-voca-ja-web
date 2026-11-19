@@ -44,9 +44,9 @@ tiny-voca-ja-web/
 
 ## モデル資産について
 
-重みファイル（`packages/model-assets/` の `model.onnx` / `model.onnx.data` /
-`tvoca.bin`）はサイズと形式の都合で Git 管理外です。いずれも
-https://huggingface.co/gachimoto/tiny-voca-ja から取得できるチェックポイントが
-正本で、再生成の手順は `tools/export/` と `packages/model-assets/README.md` にあります。
+チェックポイントの正本は https://huggingface.co/gachimoto/tiny-voca-ja です。
+`packages/model-assets/` の変換済みファイル（`model.onnx` / `model.onnx.data` /
+`tvoca.bin`）はこのリポジトリに直接コミットできます。再生成の手順は
+`tools/export/` と `packages/model-assets/README.md` にあります。
 WASM 版の辞書・モデル配置は `apps/wasm-app/frontend/scripts/prepare-assets.mjs` が
 自動で行います。

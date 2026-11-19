@@ -6,9 +6,6 @@ dist/
 
 # Model binaries and generated assets (weights live on Hugging Face;
 # see packages/model-assets/README.md)
-packages/model-assets/*.onnx
-packages/model-assets/*.onnx.data
-packages/model-assets/*.bin
 apps/wasm-app/frontend/public/model/
 apps/wasm-app/frontend/public/kuromoji-dict/
 apps/wasm-app/frontend/public/engine/
