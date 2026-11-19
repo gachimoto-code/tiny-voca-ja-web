@@ -1,0 +1,20 @@
+{
+  "name": "@tiny-voca-ja/phonemizer",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/phonemizer.js",
+  "types": "dist/phonemizer.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "check": "node dist/check.js"
+  },
+  "dependencies": {
+    "kuromoji": "^0.1.2"
+  },
+  "devDependencies": {
+    "@types/kuromoji": "^0.1.1",
+    "@types/node": "^26.6.6",
+    "typescript": "^5.6.0"
+  }
+}

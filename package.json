@@ -1,0 +1,16 @@
+{
+  "name": "tiny-voca-ja-web",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "apps/server-app/frontend",
+    "apps/server-app/backend",
+    "apps/wasm-app/frontend"
+  ],
+  "scripts": {
+    "build:phonemizer": "npm run build -w @tiny-voca-ja/phonemizer",
+    "dev:server": "npm run dev -w server-app-backend",
+    "dev:web": "npm run dev -w server-app-frontend"
+  }
+}
