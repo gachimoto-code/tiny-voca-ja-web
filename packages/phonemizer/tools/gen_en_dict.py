@@ -294,6 +294,20 @@ def main():
     with open(OUT, "w", encoding="utf-8") as f:
         json.dump(result, f, ensure_ascii=False, separators=(",", ":"), sort_keys=True)
     print(f"entries: {len(result)} -> {OUT}")
+    # Also emit a .ts module next to the .json: english.ts imports the .ts,
+    # because a JSON import through tsx/esbuild turns keys into top-level
+    # `var` declarations and the dictionary word "arguments" is an illegal
+    # variable name in ESM strict mode.
+    if OUT.endswith(".json"):
+        ts_out = OUT[:-5] + ".ts"
+        body = json.dumps(result, ensure_ascii=False, separators=(",", ":"), sort_keys=True)
+        with open(ts_out, "w", encoding="utf-8") as f:
+            f.write("// GENERATED from en-dict.json by tools/gen_en_dict.py — do not edit by hand.\n")
+            f.write("// A .ts module (not a JSON import) so tsx/esbuild does not turn the keys\n")
+            f.write("// into top-level `var` declarations — the dictionary contains the word\n")
+            f.write("// \"arguments\", which is an illegal variable name in ESM strict mode.\n")
+            f.write("export default " + body + " as Record<string, string>;\n")
+        print(f"entries: {len(result)} -> {ts_out}")
     for w in ["the", "hello", "world", "cat", "dog", "book", "street", "school",
               "python", "github", "computer", "water", "people", "think", "three",
               "thank", "sing", "king", "apple", "time", "home", "name", "day",

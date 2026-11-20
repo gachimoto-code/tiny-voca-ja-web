@@ -11,7 +11,7 @@
 // Proper nouns and rare words are approximations by design; the goal is
 // that a mixed sentence is spoken at all instead of dropping the word.
 
-import enDictJson from "./en-dict.json" with { type: "json" };
+import enDictJson from "./en-dict.js";
 import { numberTokenKana } from "./numbers.js";
 
 const EN_DICT = enDictJson as Record<string, string>;
