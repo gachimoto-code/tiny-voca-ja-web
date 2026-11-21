@@ -1,9 +1,12 @@
 // tiny-voca-ja server app (Route A): Express + onnxruntime-node.
 //
-// POST /api/speak { text, voice?: "F2"|"M2", speed?: 0.5..2 }
+// POST /api/speak { text, voice?: "F2"|"M2", speed?: 0.5..2, vocoder?: boolean }
 //   -> audio/wav (24 kHz, 16-bit PCM, mono)
 // Text is phonemized by @tiny-voca-ja/phonemizer (kuromoji + rules),
 // the waveform is synthesized by the ONNX model in packages/model-assets.
+// With vocoder: true the synthesized waveform is re-synthesized through
+// the HiFi-GAN vocoder in packages/model-assets/vocoder_gen.onnx
+// (log-mel extraction in src/mel.ts, inference in src/vocoder.ts).
 
 import { createRequire } from "node:module";
 import { dirname, join, resolve } from "node:path";
@@ -13,6 +16,7 @@ import dotenv from "dotenv";
 import express from "express";
 import * as ort from "onnxruntime-node";
 import { initPhonemizer, phonemize } from "@tiny-voca-ja/phonemizer";
+import { Vocoder } from "./vocoder.js";
 
 dotenv.config();
 
@@ -24,6 +28,10 @@ const modelPath =
 const meta = JSON.parse(
   readFileSync(resolve(dirname(modelPath), "meta.json"), "utf8"),
 ) as { sample_rate: number; hop: number; max_frames: number; max_tokens: number; voices: string[] };
+const vocoderPath =
+  process.env.VOCODER_MODEL_PATH ||
+  resolve(dirname(modelPath), "vocoder_gen.onnx");
+const vocoder = new Vocoder(vocoderPath);
 
 const require = createRequire(import.meta.url);
 const dicPath = join(dirname(require.resolve("kuromoji/package.json")), "dict");
@@ -80,12 +88,12 @@ const app = express();
 app.use(express.json({ limit: "16kb" }));
 
 app.get("/api/health", (_req, res) => {
-  res.json({ ok: true, model: "tiny-voca-ja", voices: meta.voices });
+  res.json({ ok: true, model: "tiny-voca-ja", voices: meta.voices, vocoder: vocoder.available });
 });
 
 app.post("/api/speak", async (req, res) => {
   try {
-    const { text, voice = "F2", speed = 1 } = req.body ?? {};
+    const { text, voice = "F2", speed = 1, vocoder: useVocoder = false } = req.body ?? {};
     if (typeof text !== "string" || !text.trim()) {
       return res.status(400).json({ error: "text is required" });
     }
@@ -114,7 +122,15 @@ app.post("/api/speak", async (req, res) => {
     const out = await session.run(feeds);
     const wave = out.wave.data as Float32Array;
     const samples = Number(out.samples.data[0]);
-    let trimmed = wave.subarray(0, samples);
+    let trimmed: Float32Array = wave.subarray(0, samples);
+    if (useVocoder === true) {
+      if (!vocoder.available) {
+        return res.status(503).json({
+          error: "vocoder model not found; run `node tools/fetch-vocoder-model.mjs` first",
+        });
+      }
+      trimmed = await vocoder.vocode(Float32Array.from(trimmed));
+    }
     let peak = 0;
     for (const v of trimmed) peak = Math.max(peak, Math.abs(v));
     if (peak > 0.99) {
@@ -123,6 +139,7 @@ app.post("/api/speak", async (req, res) => {
     }
     res.set("Content-Type", "audio/wav");
     res.set("X-Phonemes", String(ids.length));
+    res.set("X-Vocoder", useVocoder === true ? "on" : "off");
     res.send(encodeWav(trimmed, meta.sample_rate));
   } catch (err) {
     console.error(err);

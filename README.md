@@ -47,6 +47,12 @@ npm run dev:web      # フロントエンド（Vite）
 
 ブラウザで http://localhost:5173 を開きます。`/api` へのリクエストはフロントの開発サーバがバックエンド（3001）へ中継します。
 
+アプリAには HiFi-GAN ボコーダによる再合成の聴き比べ機能があります（生成時に元音声とボコーダ版の両方が作られます）。ボコーダのモデル `packages/model-assets/vocoder_gen.onnx` はリポジトリに含まれないため、使う場合は一度だけ取得してください（無くても元音声の生成は動きます）。
+
+```sh
+node tools/fetch-vocoder-model.mjs   # Hugging Face から vocoder_gen.onnx を取得
+```
+
 ### B: ブラウザ版（WASM）
 
 ```sh
